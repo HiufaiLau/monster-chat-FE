@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Switch, Route, useLocation } from 'react-router-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
 import axios from 'axios';
@@ -22,59 +22,68 @@ function NoMatch() {
   );
 }
 
-class App extends Component {
-  state = { user: { auth: false, userId: null } };
+const App = () => {
+  const [auth, setAuth] = useState(false);
+  const [users, setUsers] = useState({});
+  const [userId, setUserId] = useState(null);
 
-  async componentDidMount() {
-    try {
-      const res = await axios.get('http://localhost:3000/api/users/isAuthenticated', { withCredentials: true });
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await axios.get(
+        'http://localhost:3000/api/users/isAuthenticated',
+        { withCredentials: true }
+      );
       if (res?.data?.sucess) {
-        this.setUser(true, res.data.userId);
+        setAuth(true);
+        setUserId(res.data.userId);
       }
-    } catch (error) {
-      console.log(error);
-    }
-  }
+      const resData = await axios.get('http://localhost:3000/api/users', {
+        withCredentials: true,
+      });
+      setUsers(resData.data);
+      console.log('data :>> ', users);
+    };
 
-  setUser = (auth, userId) => {
-    this.setState({ user: { auth, userId } });
-  };
+    fetchData();
+  }, []);
 
-  render() {
-    return (
-      <div>
-        <Router>
-          <Header auth={this.state.user.auth} setUser={this.setUser} />
+  return (
+    <div>
+      <Router>
+        <Header
+          auth={auth}
+          setAuth={setAuth}
+          users={users}
+        />
 
-          <Switch>
-            <Route exact path='/'>
-              <LandingPage />
-            </Route>
+        <Switch>
+          <Route exact path='/'>
+            <LandingPage />
+          </Route>
 
-            <Route path='/signup'>
-              <Signup />
-            </Route>
+          <Route path='/signup'>
+            <Signup />
+          </Route>
 
-            <Route path='/login'>
-              <Login setUser={this.setUser} />
-            </Route>
+          <Route path='/login'>
+            <Login setUser={setUsers} setAuth={setAuth} setUserId={setUserId} userId={userId}/>
+          </Route>
 
-            <Route path='/profile'>
-              <Profile />
-            </Route>
+          <Route path='/profile'>
+            <Profile />
+          </Route>
 
-            <Route path='/chat'>
-              <Chat userId={this.state.user.userId} />
-            </Route>
+          <Route path='/chat'>
+            <Chat userId={userId} users={users} setUsers={setUsers} />
+          </Route>
 
-            <Route path='*'>
-              <NoMatch />
-            </Route>
-          </Switch>
-        </Router>
-      </div>
-    );
-  }
-}
+          <Route path='*'>
+            <NoMatch />
+          </Route>
+        </Switch>
+      </Router>
+    </div>
+  );
+};
 
 export default App;

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import Paper from '@material-ui/core/Paper';
 import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
@@ -62,126 +62,134 @@ function Alert(props) {
   return <MuiAlert elevation={6} variant='filled' {...props} />;
 }
 
-class Profile extends Component {
-  state = {
-    name: '',
-    file: null,
-    fileBlob: null,
-    snackbarOpen: false,
-    error: '',
-  };
+const Profile = (props) => {
 
-  async componentDidMount() {
-    const res = await this.getProfile();
-    if (res.data?.name) {
-      this.setState({ name: res.data.name });
-    }
-    if (res.data?.avatar) {
-      this.setState({ file: res.data.avatar });
-    }
-  }
+  const [name, setName] = useState('');
+  const [file, setFile] = useState(null);
+  const [fileBlob, setFileBlob] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [error, setError] = useState('');
 
-  handleClose = (event, reason) => {
+  useEffect(() => {
+    getProfile();
+  }, []);
+
+  const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
     }
 
-    this.setState({ snackbarOpen: false });
+    setSnackbarOpen(false);
   };
 
-  setName = (event) => {
-    this.setState({ name: event.target.value });
+  const nameHanfdler = (event) => {
+    setName(event.target.value);
   };
 
-  setFile = (event) => {
-    this.setState({
-      file: URL.createObjectURL(event.target.files[0]),
-      fileBlob: event.target.files[0],
-    });
+  const fileHandler = (event) => {
+    setFile(URL.createObjectURL(event.target.files[0]));
+    setFileBlob(event.target.files[0]);
   };
 
-  getProfile = async () => {
+  const getProfile = async () => {
     try {
       const res = await axios.get('http://localhost:3000/api/users/profile', {
         withCredentials: true,
       });
-
+      if (res.data?.name) {
+        setName(res.data.name);
+      }
+      if (res.data?.avatar) {
+        setFile(res.data.avatar);
+      }
       return res;
     } catch (error) {
       this.setState({ error: error.message, snackbarOpen: true });
     }
   };
 
-  submitProfile = async () => {
+  const submitProfile = async () => {
     const formData = new FormData();
-    if (this.state.fileBlob) {
-      formData.append('avatar', this.state.fileBlob, this.state.fileBlob.name);
+    if (fileBlob) {
+      formData.append('avatar', fileBlob, fileBlob.name);
     }
-    formData.append('name', this.state.name);
+    formData.append('name', name);
 
     try {
       await axios.put('http://localhost:3000/api/users/profile', formData, {
         withCredentials: true,
       });
     } catch (error) {
-      this.setState({ error: error.message, snackbarOpen: true });
+      setError(error.message);
+      setSnackbarOpen(true);
     }
   };
 
-  render() {
-    const { classes } = this.props;
-    return (
-      <div className={classes.root}>
-        <Snackbar open={this.state.snackbarOpen} autoHideDuration={6000}>
-          <Alert onClose={this.handleClose} severity='error'>
-            {this.state.error}
-          </Alert>
-        </Snackbar>
-        <Typography margin='normal' align='left' variant='h3' className={classes.title}>
-          My Profile!
-        </Typography>
-        <Paper elevation={3} className={classes.paper}>
-          <Box className={classes.inputWrapper}>
-            <Box className={classes.inputFieldWrapper}>
-              <Typography margin='normal' align='left' variant='h6'>
-                Name:
-              </Typography>
-              <TextField
-                fullWidth={true}
-                id='outlined-required'
-                variant='outlined'
-                margin='normal'
-                value={this.state.name}
-                onChange={this.setName}
-              />
-            </Box>
-            <Box className={classes.inputFieldWrapper}>
-              <Typography margin='normal' align='left' variant='h6'>
-                Avatar:
-              </Typography>
-              <Avatar alt={this.state.name} src={this.state.file} className={classes.large} />
-              <input
-                accept='image/*'
-                onChange={this.setFile}
-                className={classes.input}
-                id='contained-button-file'
-                multiple
-                type='file'
-              />
-              <label htmlFor='contained-button-file' className={classes.upload}>
-                <Button variant='contained' color='secondary' component='span'>
-                  Upload
-                </Button>
-              </label>
-            </Box>
+  const { classes } = props;
+  return (
+    <div className={classes.root}>
+      <Snackbar open={snackbarOpen} autoHideDuration={6000}>
+        <Alert onClose={handleClose} severity='error'>
+          {error}
+        </Alert>
+      </Snackbar>
+      <Typography
+        margin='normal'
+        align='left'
+        variant='h3'
+        className={classes.title}
+      >
+        My Profile!
+      </Typography>
+      <Paper elevation={3} className={classes.paper}>
+        <Box className={classes.inputWrapper}>
+          <Box className={classes.inputFieldWrapper}>
+            <Typography margin='normal' align='left' variant='h6'>
+              Name:
+            </Typography>
+            <TextField
+              fullWidth={true}
+              id='outlined-required'
+              variant='outlined'
+              margin='normal'
+              value={name}
+              onChange={nameHanfdler}
+            />
           </Box>
-          <Button margin='normal' variant='contained' onClick={this.submitProfile}>
-            Save
-          </Button>
-        </Paper>
-      </div>
-    );
-  }
-}
+          <Box className={classes.inputFieldWrapper}>
+            <Typography margin='normal' align='left' variant='h6'>
+              Avatar:
+            </Typography>
+            <Avatar
+              alt={name}
+              src={file}
+              className={classes.large}
+            />
+            <input
+              accept='image/*'
+              onChange={fileHandler}
+              className={classes.input}
+              id='contained-button-file'
+              multiple
+              type='file'
+            />
+            <label htmlFor='contained-button-file' className={classes.upload}>
+              <Button variant='contained' color='secondary' component='span'>
+                Upload
+              </Button>
+            </label>
+          </Box>
+        </Box>
+        <Button
+          margin='normal'
+          variant='contained'
+          onClick={submitProfile}
+        >
+          Save
+        </Button>
+      </Paper>
+    </div>
+  );
+};
 
 export default withStyles(styles)(Profile);
