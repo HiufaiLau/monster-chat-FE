@@ -12,7 +12,6 @@ Inside "src" folder:
 - Update dependency imports
 
 4. Create Header component and Header.module.css file inside "components" folder and render a div with any text
-
 5. Remove content from App component
 6. Import Header component and add it to the render method.
 7. Go to Material Ui Website (https://material-ui.com/components/app-bar/) copy and paste the Simple App Bar to the header component
@@ -43,9 +42,7 @@ Inside "src" folder:
 
 25. Pass setUser function to Login component and call it with argument "true" after successful login.
 26. Implement redirect to /dashboard after successful login
-
 27. Implement /logout
-
 28. Implement profile form
 
 - Store images on file system
@@ -58,21 +55,15 @@ d. Add submit button
 e. Add submit logic. Use FormData library to append input fields to submit them to API PUT /profile
 f. Add lifecycle method to fetch profile data on profile access and page reload
 g. Implement fetch profile logic to fetch profile data from API GET /profile
-h.
+
 
 29. Implement logic to save or update profile form
-
 30. Display users on chat page
 31. Implement logic to fetch all available users
-
 32. Implement chat message window
 33. Implement logic to fetch messages
+34. Implement input to enter chat message
+35. Implement logic to send message (Socket.io)
 
-34. Implement logic to fetch messages on scroll (kind of pagination) (Optional)
+36. Done!
 
-35. Implement input to enter chat message
-36. Implement logic to send message (Socket.io)
-
-37. Implement logic for one-on-one chat (Optional)
-    Done!
-# monster-chat-FE
